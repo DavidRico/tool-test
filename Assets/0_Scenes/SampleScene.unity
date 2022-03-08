@@ -167,7 +167,7 @@ MonoBehaviour:
       type: 3}
   - Id: 2
     Name: Super Guy
-    Price: 350
+    Price: 300
     Icon: {fileID: 21300000, guid: bea1ec740723d2841b4cd529065281f0, type: 3}
     Prefab: {fileID: 8263573634488986177, guid: 3e839fb5686d8634e8ea50df3fb53e77,
       type: 3}

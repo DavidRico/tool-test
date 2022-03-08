@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -19,6 +20,10 @@ public class CharacterCreatorEditorWindow : EditorWindow
     private Texture storeIcon;
     private string characterName;
     private int characterPrice;
+    private TextAsset csvFile;
+    private List<Dictionary<string, object>> parsedCsv;
+    private string[] characterNamesFromCsv;
+    private int characterIndex;
 
     private Editor gameObjectEditor;
 
@@ -90,7 +95,8 @@ public class CharacterCreatorEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
         ShowSmallButton("Configure prefab", () =>
         {
-            if (material == null) material = AssetTools.CreateMaterialFrom(materialColor, materialTexture, shader, prefab.name);
+            if (material == null)
+                material = AssetTools.CreateMaterialFrom(materialColor, materialTexture, shader, prefab.name);
             prefab = AssetTools.ConfigurePrefab(prefab, material, animatorController, colliderRadius, colliderHeight);
             gameObjectEditor = Editor.CreateEditor(prefab);
         });
@@ -99,15 +105,33 @@ public class CharacterCreatorEditorWindow : EditorWindow
     private void ShowConfigureStoreIcon()
     {
         GUILayout.Label("Step 3: Configure import settings for store icon", EditorStyles.largeLabel);
-        storeIcon = (Texture)EditorGUILayout.ObjectField("Store icon", storeIcon, typeof(Texture));
+        storeIcon = (Texture)EditorGUILayout.ObjectField("Store icon", storeIcon, typeof(Texture), false);
         ShowSmallButton("Configure", () => AssetTools.ConfigureTextureImportSettings(storeIcon));
     }
 
     private void ShowCreateStoreEntry()
     {
         GUILayout.Label("Step 4: Create entry in the store", EditorStyles.largeLabel);
-        characterName = EditorGUILayout.TextField("Name", characterName);
-        characterPrice = EditorGUILayout.IntField("Price", characterPrice);
+
+        TextAsset previousCsv = csvFile;
+        csvFile = (TextAsset)EditorGUILayout.ObjectField("CSV file", csvFile, typeof(TextAsset), false);
+        if (csvFile != null && (csvFile != previousCsv || parsedCsv == null))
+        {
+            parsedCsv = CSVReader.Read(csvFile);
+            characterNamesFromCsv = parsedCsv.Select(dictionary => dictionary["Name"] as string).ToArray();
+        }
+
+        if (csvFile == null)
+        {
+            EditorGUILayout.HelpBox("Can't find the csv file", MessageType.Error);
+        }
+        else
+        {
+            characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, characterNamesFromCsv);
+            characterName = parsedCsv[characterIndex]["Name"] as string;
+            characterPrice = (int)parsedCsv[characterIndex]["Price"];
+        }
+
         Sprite storeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(AssetDatabase.GetAssetPath(storeIcon));
         if (string.IsNullOrEmpty(characterName))
         {
@@ -132,8 +156,9 @@ public class CharacterCreatorEditorWindow : EditorWindow
             EditorGUILayout.HelpBox("Store icon not found", MessageType.Error);
             return;
         }
-        
-        ShowSmallButton("Create in store", () => AssetTools.CreateEntryInStore(characterName, characterPrice, storeSprite, prefab));
+
+        ShowSmallButton("Create in store",
+            () => AssetTools.CreateEntryInStore(characterName, characterPrice, storeSprite, prefab));
     }
 
     private void ShowInteractivePreviewForPrefab()
@@ -145,7 +170,8 @@ public class CharacterCreatorEditorWindow : EditorWindow
             gameObjectEditor = Editor.CreateEditor(prefab);
         }
 
-        if (gameObjectEditor != null) gameObjectEditor.OnInteractivePreviewGUI(GUILayoutUtility.GetRect(256, 256), GUIStyle.none);
+        if (gameObjectEditor != null)
+            gameObjectEditor.OnInteractivePreviewGUI(GUILayoutUtility.GetRect(256, 256), GUIStyle.none);
     }
 
     private static void ShowSmallButton(string label, Action onClick)
