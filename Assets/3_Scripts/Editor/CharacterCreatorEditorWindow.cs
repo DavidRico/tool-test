@@ -8,29 +8,27 @@ using UnityEditor.Animations;
 public class CharacterCreatorEditorWindow : EditorWindow
 {
     private GameObject fbxFile;
-    private Texture materialTexture;
     private GameObject prefab;
-    private Material material;
-    private Color materialColor;
     private Shader shader;
-    private float colliderHeight = 1.1f;
-    private float colliderRadius = 0.2f;
+    private float colliderHeight;
+    private float colliderRadius;
     private AnimatorController animatorController;
 
     private Texture storeIcon;
     private string characterName;
     private int characterPrice;
-    private TextAsset csvFile;
-    private List<Dictionary<string, object>> parsedCsv;
-    private string[] characterNamesFromCsv;
     private int characterIndex;
+    private int numberOfMaterials;
+    private Material[] materials;
 
     private Editor gameObjectEditor;
 
     [MenuItem("Tools/Character creator")]
-    public static void CustomEditorWindow()
+    public static void ShowWindow()
     {
-        GetWindow<CharacterCreatorEditorWindow>("Character creator");
+        var window = GetWindow<CharacterCreatorEditorWindow>();
+        window.titleContent = new GUIContent("Character creator");
+        window.Show();
     }
 
     private void OnEnable()
@@ -40,149 +38,160 @@ public class CharacterCreatorEditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        ShowCreatePrefab();
-        ShowConfigurePrefab();
-        ShowConfigureStoreIcon();
-        ShowCreateStoreEntry();
-
-        ShowInteractivePreviewForPrefab();
+        ShowCompleteProcess();
+        ShowConfigButtonAndInteractivePreviewForPrefab();
+    }
+    
+    private void ShowCompleteProcess()
+    {
+        if (!ShowModelConfiguration()) return;
+        if (!ShowAnimatorAndColliderConfiguration()) return;
+        if (!ShowStoreInfoConfiguration()) return;
+        if (!ShowCreatePrefabAndStoreInfo()) return;
     }
 
-    private void ShowCreatePrefab()
+    private bool ShowModelConfiguration()
     {
-        GUILayout.Label("Step 1: Create a prefab from fbx", EditorStyles.largeLabel);
-
+        GUILayout.Label("Model and material configuration", EditorStyles.largeLabel);
         fbxFile = (GameObject)EditorGUILayout.ObjectField("FBX file", fbxFile, typeof(GameObject), false);
-
-        if (fbxFile != null)
+        if (fbxFile == null)
         {
-            if (PrefabUtility.GetPrefabAssetType(fbxFile) != PrefabAssetType.Model)
-            {
-                fbxFile = null;
-                ShowNotification(new GUIContent("Drag the fbx asset, not a prefab"));
-            }
-            else
-            {
-                ShowSmallButton("Create prefab", () =>
-                {
-                    prefab = AssetTools.CreatePrefabFromFBX(fbxFile);
-                    gameObjectEditor = Editor.CreateEditor(prefab);
-                });
-            }
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("Select a model asset to continue", MessageType.Info);
+            return false;
         }
+
+        if (PrefabUtility.GetPrefabAssetType(fbxFile) != PrefabAssetType.Model)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("Selected object is not a model asset. Use the model, not a prefab",
+                MessageType.Error);
+            return false;
+        }
+
+        if (numberOfMaterials == 0)
+        {
+            GameObject temporalPrefab = PrefabUtility.InstantiatePrefab(fbxFile) as GameObject;
+            numberOfMaterials = temporalPrefab.GetComponentInChildren<Renderer>().sharedMaterials.Length;
+            DestroyImmediate(temporalPrefab);
+            return false;
+        }
+
+        if (materials == null || materials.Length != numberOfMaterials) materials = new Material[numberOfMaterials];
+
+        for (int i = 0; i < numberOfMaterials; i++)
+        {
+            materials[i] =
+                (Material)EditorGUILayout.ObjectField($"Material slot {i}", materials[i], typeof(Material), false);
+        }
+
+        if (materials.Any(x => x == null))
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.HelpBox("Do you need to create materials?", MessageType.Info);
+            if (GUILayout.Button("Material creator"))
+            {
+                MaterialCreatorWindow.ShowWindow();
+            }
+
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("You will be able to continue once all the material slots have been set",
+                MessageType.None);
+            return false;
+        }
+
+        return true;
     }
-
-    private void ShowConfigurePrefab()
+    
+    private bool ShowAnimatorAndColliderConfiguration()
     {
-        GUILayout.Label("Step 2: Configure the prefab", EditorStyles.largeLabel);
-
-        prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", prefab, typeof(GameObject), false);
-        material = (Material)EditorGUILayout.ObjectField("Use existing material", material, typeof(Material), false);
-        if (material == null)
-        {
-            materialColor = EditorGUILayout.ColorField("Base color for new material", materialColor);
-            materialTexture =
-                (Texture)EditorGUILayout.ObjectField("Texture for new material", materialTexture, typeof(Texture),
-                    false);
-            shader = (Shader)EditorGUILayout.ObjectField("Shader", shader, typeof(Shader));
-        }
-
+        GUILayout.Label("Animator and collider configuration", EditorStyles.largeLabel);
         animatorController = (AnimatorController)EditorGUILayout.ObjectField("Animator controller", animatorController,
             typeof(AnimatorController), false);
         EditorGUILayout.BeginHorizontal();
+        
+        if (colliderHeight == 0) colliderHeight = ConfigAsset.instance.colliderDefaultHeight;
+        if (colliderRadius == 0) colliderRadius = ConfigAsset.instance.colliderDefaultRadius;
+        
         colliderRadius = EditorGUILayout.FloatField("Collider radius", colliderRadius);
         colliderHeight = EditorGUILayout.FloatField("Collider height", colliderHeight);
         EditorGUILayout.EndHorizontal();
-        ShowSmallButton("Configure prefab", () =>
+        if (animatorController == null || colliderHeight == 0 || colliderRadius == 0)
         {
-            if (material == null)
-                material = AssetTools.CreateMaterialFrom(materialColor, materialTexture, shader, prefab.name);
-            prefab = AssetTools.ConfigurePrefab(prefab, material, animatorController, colliderRadius, colliderHeight);
-            gameObjectEditor = Editor.CreateEditor(prefab);
-        });
-    }
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox(
+                "You will be able to continue once the animator controller and collider size have been set",
+                MessageType.None);
+            return false;
+        }
 
-    private void ShowConfigureStoreIcon()
+        return true;
+    }
+    
+    private bool ShowStoreInfoConfiguration()
     {
-        GUILayout.Label("Step 3: Configure import settings for store icon", EditorStyles.largeLabel);
+        GUILayout.Label("Store info configuration", EditorStyles.largeLabel);
+
+        if (ConfigAsset.instance.csvFile == null)
+        {
+            EditorGUILayout.HelpBox("Can't find the csv file. Enter the configuration to set it", MessageType.Error);
+            return false;
+        }
+        
+        characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, ConfigAsset.instance.characterNamesFromCsv);
+        characterName = ConfigAsset.instance.parsedCsv[characterIndex]["Name"] as string;
+        characterPrice = (int)ConfigAsset.instance.parsedCsv[characterIndex]["Price"];
         storeIcon = (Texture)EditorGUILayout.ObjectField("Store icon", storeIcon, typeof(Texture), false);
-        ShowSmallButton("Configure", () => AssetTools.ConfigureTextureImportSettings(storeIcon));
+
+        if (storeIcon == null)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.HelpBox("You need to set the store icon to continue", MessageType.None);
+            return false;
+        }
+
+        return true;
     }
-
-    private void ShowCreateStoreEntry()
+    
+    private bool ShowCreatePrefabAndStoreInfo()
     {
-        GUILayout.Label("Step 4: Create entry in the store", EditorStyles.largeLabel);
-
-        TextAsset previousCsv = csvFile;
-        csvFile = (TextAsset)EditorGUILayout.ObjectField("CSV file", csvFile, typeof(TextAsset), false);
-        if (csvFile != null && (csvFile != previousCsv || parsedCsv == null))
-        {
-            parsedCsv = CSVReader.Read(csvFile);
-            characterNamesFromCsv = parsedCsv.Select(dictionary => dictionary["Name"] as string).ToArray();
-        }
-
-        if (csvFile == null)
-        {
-            EditorGUILayout.HelpBox("Can't find the csv file", MessageType.Error);
-        }
-        else
-        {
-            characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, characterNamesFromCsv);
-            characterName = parsedCsv[characterIndex]["Name"] as string;
-            characterPrice = (int)parsedCsv[characterIndex]["Price"];
-        }
-
         Sprite storeSprite = AssetDatabase.LoadAssetAtPath<Sprite>(AssetDatabase.GetAssetPath(storeIcon));
-        if (string.IsNullOrEmpty(characterName))
-        {
-            EditorGUILayout.HelpBox("Character name cannot be empty", MessageType.Error);
-            return;
-        }
-
-        if (characterPrice <= 0)
-        {
-            EditorGUILayout.HelpBox("Did you forget to set the price?", MessageType.Error);
-            return;
-        }
-
-        if (prefab == null)
-        {
-            EditorGUILayout.HelpBox("You need to set the prefab reference", MessageType.Error);
-            return;
-        }
-
         if (storeSprite == null)
         {
-            EditorGUILayout.HelpBox("Store icon not found", MessageType.Error);
-            return;
+            EditorGUILayout.HelpBox("Store icon sprite not found, is it correctly configured?", MessageType.Error);
+            return false;
         }
 
-        ShowSmallButton("Create in store",
-            () => AssetTools.CreateEntryInStore(characterName, characterPrice, storeSprite, prefab));
+        CustomEditorTools.ShowSmallButton("Add to store", () =>
+        {
+            prefab = AssetTools.CreatePrefab(fbxFile, materials, animatorController, colliderRadius, colliderHeight,
+                characterName);
+            AssetTools.ConfigureTextureImportSettings(storeIcon);
+            AssetTools.CreateEntryInStore(characterName, characterPrice, storeSprite, prefab);
+            Selection.SetActiveObjectWithContext(prefab, prefab);
+            gameObjectEditor = Editor.CreateEditor(prefab);
+        });
+        return true;
     }
 
-    private void ShowInteractivePreviewForPrefab()
+    private void ShowConfigButtonAndInteractivePreviewForPrefab()
     {
         GUILayout.FlexibleSpace();
+        CustomEditorTools.ShowSmallButton("Configuration", ConfigWindow.ShowWindow);
+
+        if (prefab == null) return;
+
         GUILayout.Label("Prefab preview", EditorStyles.largeLabel);
-        if (gameObjectEditor == null && prefab != null)
+        if (gameObjectEditor == null)
         {
             gameObjectEditor = Editor.CreateEditor(prefab);
         }
 
         if (gameObjectEditor != null)
-            gameObjectEditor.OnInteractivePreviewGUI(GUILayoutUtility.GetRect(256, 256), GUIStyle.none);
-    }
-
-    private static void ShowSmallButton(string label, Action onClick)
-    {
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        if (GUILayout.Button(label))
         {
-            onClick.Invoke();
+            gameObjectEditor.OnInteractivePreviewGUI(GUILayoutUtility.GetRect(256, 256), GUIStyle.none);
         }
-
-        EditorGUILayout.EndHorizontal();
     }
 }

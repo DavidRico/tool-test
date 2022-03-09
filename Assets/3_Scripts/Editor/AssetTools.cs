@@ -5,14 +5,34 @@ using UnityEngine;
 
 public static class AssetTools
 {
-    public static Material CreateMaterialFrom(Color color, Texture texture, Shader shader, string name)
+    public static Material CreateMaterialFrom(Color color, Dictionary<string, Texture> textures, Shader shader, string name)
     {
         Material newMaterial = new Material(shader)
         {
             color = color,
-            mainTexture = texture
         };
-        AssetDatabase.CreateAsset(newMaterial, "Assets/1_Graphics/Materials/" + name + ".mat");
+        
+        foreach (string key in textures.Keys)
+        {
+            newMaterial.SetTexture(key, textures[key]);
+        }
+        
+        string materialPath = "Assets/1_Graphics/Materials/" + name + ".mat";
+        if (AssetDatabase.LoadAssetAtPath<Material>(materialPath) != null)
+        {
+            if (EditorUtility.DisplayDialog("Warning!",
+                    "There is already a material asset with the same name. Do you want to overwrite it?", "Overwrite",
+                    "Cancel"))
+            {
+                AssetDatabase.DeleteAsset(materialPath);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        AssetDatabase.CreateAsset(newMaterial, materialPath);
         AssetDatabase.Refresh();
         return newMaterial;
     }
@@ -33,6 +53,32 @@ public static class AssetTools
         capsuleCollider.center = Vector3.up * (height / 2f);
         AssignMaterials(prefab, material);
         return SavePrefab(prefab, AssetDatabase.GetAssetPath(prefab));
+    }
+
+    public static GameObject CreatePrefab(GameObject model, Material[] materials, AnimatorController animatorController,
+        float colliderRadius, float colliderHeight, string prefabName)
+    {
+        string path = "Assets/2_Prefabs/" + prefabName + ".prefab";
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
+        {
+            if (!EditorUtility.DisplayDialog("Warning!",
+                    "There is already a prefab with the same name. Do you want to overwrite it?", "Overwrite",
+                    "Cancel"))
+            {
+                return null;
+            }
+        }
+        GameObject instance = PrefabUtility.InstantiatePrefab(model) as GameObject;
+        instance.GetComponent<Animator>().runtimeAnimatorController = animatorController;
+        CapsuleCollider capsuleCollider = instance.GetOrAddComponent<CapsuleCollider>();
+        capsuleCollider.radius = colliderRadius;
+        capsuleCollider.height = colliderHeight;
+        capsuleCollider.center = Vector3.up * (colliderHeight / 2f);
+        instance.GetComponentInChildren<Renderer>().sharedMaterials = materials;
+        GameObject prefabAsset =
+            PrefabUtility.SaveAsPrefabAsset(instance, path);
+        Object.DestroyImmediate(instance);
+        return prefabAsset;
     }
 
     public static void AssignMaterials(GameObject gameObject, Material material)
@@ -87,7 +133,7 @@ public static class AssetTools
         {
             StoreItem newItem = new StoreItem();
             int id = 0;
-            while (Store.Instance.StoreItems.Exists(x=>x.Id == id))
+            while (Store.Instance.StoreItems.Exists(x => x.Id == id))
             {
                 id++;
             }
