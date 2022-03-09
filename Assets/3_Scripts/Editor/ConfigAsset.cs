@@ -27,6 +27,12 @@ public class ConfigAsset : ScriptableSingleton<ConfigAsset>
         characterNamesFromCsv = parsedCsv.Select(dictionary => dictionary["Name"] as string).ToArray();
     }
 
+    public void Reload()
+    {
+        Setup();
+        SaveToFile();
+    }
+
     public void SaveToFile()
     {
         Save(true);

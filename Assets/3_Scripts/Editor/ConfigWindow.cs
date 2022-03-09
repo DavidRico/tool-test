@@ -22,9 +22,10 @@ public class ConfigWindow : EditorWindow
         if (ConfigAsset.instance.csvFile != null &&
             (ConfigAsset.instance.csvFile != previousCsv || ConfigAsset.instance.parsedCsv == null))
         {
-            ConfigAsset.instance.Setup();
-            ConfigAsset.instance.SaveToFile();
+            ConfigAsset.instance.Reload();
         }
+        
+        CustomEditorTools.ShowSmallButton("Reload", ConfigAsset.instance.Reload);
 
         float prevcolliderDefaultRadius = ConfigAsset.instance.colliderDefaultRadius;
         ConfigAsset.instance.colliderDefaultRadius = EditorGUILayout.FloatField("Default collider radius",

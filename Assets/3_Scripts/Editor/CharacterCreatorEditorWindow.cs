@@ -21,6 +21,8 @@ public class CharacterCreatorEditorWindow : EditorWindow
     private int numberOfMaterials;
     private Material[] materials;
 
+    private bool showExistingCharacters;
+
     private Editor gameObjectEditor;
 
     [MenuItem("Tools/Character creator")]
@@ -52,6 +54,7 @@ public class CharacterCreatorEditorWindow : EditorWindow
 
     private bool ShowModelConfiguration()
     {
+        EditorGUILayout.Space();
         GUILayout.Label("Model and material configuration", EditorStyles.largeLabel);
         fbxFile = (GameObject)EditorGUILayout.ObjectField("FBX file", fbxFile, typeof(GameObject), false);
         if (fbxFile == null)
@@ -107,6 +110,7 @@ public class CharacterCreatorEditorWindow : EditorWindow
     
     private bool ShowAnimatorAndColliderConfiguration()
     {
+        EditorGUILayout.Space();
         GUILayout.Label("Animator and collider configuration", EditorStyles.largeLabel);
         animatorController = (AnimatorController)EditorGUILayout.ObjectField("Animator controller", animatorController,
             typeof(AnimatorController), false);
@@ -132,6 +136,7 @@ public class CharacterCreatorEditorWindow : EditorWindow
     
     private bool ShowStoreInfoConfiguration()
     {
+        EditorGUILayout.Space();
         GUILayout.Label("Store info configuration", EditorStyles.largeLabel);
 
         if (ConfigAsset.instance.csvFile == null)
@@ -139,8 +144,27 @@ public class CharacterCreatorEditorWindow : EditorWindow
             EditorGUILayout.HelpBox("Can't find the csv file. Enter the configuration to set it", MessageType.Error);
             return false;
         }
+
+        showExistingCharacters = EditorGUILayout.Toggle("Show existing characters", showExistingCharacters);
+
+        if (showExistingCharacters)
+        {
+            characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, ConfigAsset.instance.characterNamesFromCsv);
+        }
+        else
+        {
+            List<string> names = ConfigAsset.instance.characterNamesFromCsv.ToList();
+            names.RemoveAll(x => Store.Instance.StoreItems.Exists(y => y.Name == x));
+            
+            if (names.Count == 0)
+            {
+                EditorGUILayout.HelpBox("Can't find a character in the csv file that is not already in the store", MessageType.Error);
+                return false;
+            }
+            
+            characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, names.ToArray());
+        }
         
-        characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, ConfigAsset.instance.characterNamesFromCsv);
         characterName = ConfigAsset.instance.parsedCsv[characterIndex]["Name"] as string;
         characterPrice = (int)ConfigAsset.instance.parsedCsv[characterIndex]["Price"];
         storeIcon = (Texture)EditorGUILayout.ObjectField("Store icon", storeIcon, typeof(Texture), false);
