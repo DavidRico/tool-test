@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &8263573634488888495
+--- !u!1001 &5309197685321747585
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -10,6 +10,14 @@ PrefabInstance:
     - target: {fileID: 100078, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
       propertyPath: m_Name
       value: free_male_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400008, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.00031511762
+      objectReference: {fileID: 0}
+    - target: {fileID: 400008, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.00024358722
       objectReference: {fileID: 0}
     - target: {fileID: 400078, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
       propertyPath: m_RootOrder
@@ -62,26 +70,26 @@ PrefabInstance:
     - target: {fileID: 13700000, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5c32287da4f3f184abfa58877878544e, type: 2}
+      objectReference: {fileID: 2100000, guid: b127ad846a00e084d91f36cf308e8270, type: 2}
     - target: {fileID: 13700000, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
       propertyPath: m_Materials.Array.data[1]
       value: 
-      objectReference: {fileID: 2100000, guid: 5c32287da4f3f184abfa58877878544e, type: 2}
+      objectReference: {fileID: 2100000, guid: b127ad846a00e084d91f36cf308e8270, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 461413943bab6ef40aa2a33f18380180, type: 3}
---- !u!1 &8263573634488986177 stripped
+--- !u!1 &5309197685321648751 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100078, guid: 461413943bab6ef40aa2a33f18380180,
     type: 3}
-  m_PrefabInstance: {fileID: 8263573634488888495}
+  m_PrefabInstance: {fileID: 5309197685321747585}
   m_PrefabAsset: {fileID: 0}
---- !u!136 &-432870752734156036
+--- !u!136 &7841708271264675990
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8263573634488986177}
+  m_GameObject: {fileID: 5309197685321648751}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1

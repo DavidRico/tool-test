@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        OnCharacterChanged(Store.Instance.StoreItems[0]);
+        OnCharacterChanged(Store.Instance.storeSo.StoreItems[0]);
         Store.Instance.OnItemSelected += OnCharacterChanged;
     }
 

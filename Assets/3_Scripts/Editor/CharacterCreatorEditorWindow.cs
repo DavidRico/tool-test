@@ -18,6 +18,7 @@ public class CharacterCreatorEditorWindow : EditorWindow
     private string characterName;
     private int characterPrice;
     private int characterIndex;
+    private int filteredCharacterIndex;
     private int numberOfMaterials;
     private Material[] materials;
 
@@ -144,6 +145,12 @@ public class CharacterCreatorEditorWindow : EditorWindow
             EditorGUILayout.HelpBox("Can't find the csv file. Enter the configuration to set it", MessageType.Error);
             return false;
         }
+        
+        if (ConfigAsset.instance.store == null)
+        {
+            EditorGUILayout.HelpBox("Can't find the store asset file. Enter the configuration to set it", MessageType.Error);
+            return false;
+        }
 
         showExistingCharacters = EditorGUILayout.Toggle("Show existing characters", showExistingCharacters);
 
@@ -154,15 +161,16 @@ public class CharacterCreatorEditorWindow : EditorWindow
         else
         {
             List<string> names = ConfigAsset.instance.characterNamesFromCsv.ToList();
-            names.RemoveAll(x => Store.Instance.StoreItems.Exists(y => y.Name == x));
+            names.RemoveAll(x => ConfigAsset.instance.store.StoreItems.Exists(y => y.Name == x));
             
             if (names.Count == 0)
             {
                 EditorGUILayout.HelpBox("Can't find a character in the csv file that is not already in the store", MessageType.Error);
                 return false;
             }
-            
-            characterIndex = EditorGUILayout.Popup("Character to create", characterIndex, names.ToArray());
+            filteredCharacterIndex = EditorGUILayout.Popup("Character to create", filteredCharacterIndex, names.ToArray());
+            if (filteredCharacterIndex == -1) filteredCharacterIndex = 0;
+            characterIndex = ConfigAsset.instance.characterNamesFromCsv.ToList().IndexOf(names[filteredCharacterIndex]);
         }
         
         characterName = ConfigAsset.instance.parsedCsv[characterIndex]["Name"] as string;

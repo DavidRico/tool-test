@@ -115,14 +115,14 @@ public static class AssetTools
 
     public static void CreateEntryInStore(string name, int price, Sprite icon, GameObject prefab)
     {
-        StoreItem existing = Store.Instance.StoreItems.Find(x => x.Name == name);
+        StoreItem existing = ConfigAsset.instance.store.StoreItems.Find(x => x.Name == name);
         if (existing != null)
         {
             if (EditorUtility.DisplayDialog("Warning!",
                     "There is an entry in the store with the same name. Do you want to overwrite it?", "Overwrite",
                     "Cancel"))
             {
-                Undo.RecordObject(Store.Instance, "Overwrite store entry");
+                Undo.RecordObject(ConfigAsset.instance.store, "Overwrite store entry");
                 existing.Price = price;
                 existing.Icon = icon;
                 existing.Prefab = prefab;
@@ -133,18 +133,18 @@ public static class AssetTools
         {
             StoreItem newItem = new StoreItem();
             int id = 0;
-            while (Store.Instance.StoreItems.Exists(x => x.Id == id))
+            while (ConfigAsset.instance.store.StoreItems.Exists(x => x.Id == id))
             {
                 id++;
             }
 
-            Undo.RecordObject(Store.Instance, "Create store entry");
+            Undo.RecordObject(ConfigAsset.instance.store, "Create store entry");
             newItem.Id = id;
             newItem.Name = name;
             newItem.Price = price;
             newItem.Prefab = prefab;
             newItem.Icon = icon;
-            Store.Instance.StoreItems.Add(newItem);
+            ConfigAsset.instance.store.StoreItems.Add(newItem);
         }
     }
 

@@ -16,7 +16,7 @@ public class StoreItem
 
 public class Store : Singleton<Store>
 {
-    public List<StoreItem> StoreItems;
+    public StoreSO storeSo;
     public Action<StoreItem> OnItemSelected;
 
     public void SelectItem(StoreItem item)

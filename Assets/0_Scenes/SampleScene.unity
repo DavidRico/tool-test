@@ -152,25 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef9cc52e7e67f984f880a0afc3071385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  StoreItems:
-  - Id: 0
-    Name: Guy
-    Price: 100
-    Icon: {fileID: 21300000, guid: afb1eb6db263c73429abcadedd4607a4, type: 3}
-    Prefab: {fileID: 7363997819604639264, guid: 63f56fca1e9c3cc48ba57e14a6774a4b,
-      type: 3}
-  - Id: 1
-    Name: Zombie
-    Price: 200
-    Icon: {fileID: 21300000, guid: 8c950c7829811dc48a532caad8f4fbe1, type: 3}
-    Prefab: {fileID: 5187417456626266655, guid: abf17b2357e9a2f46be8ee90facfb964,
-      type: 3}
-  - Id: 2
-    Name: Super Guy
-    Price: 300
-    Icon: {fileID: 21300000, guid: bea1ec740723d2841b4cd529065281f0, type: 3}
-    Prefab: {fileID: 3870924208596711761, guid: 6eaff8ba774f94e4399d17494360c52d,
-      type: 3}
+  storeSo: {fileID: 11400000, guid: b776b44d294df3846b60d8c712c57138, type: 2}
 --- !u!4 &40247147
 Transform:
   m_ObjectHideFlags: 0

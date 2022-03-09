@@ -10,6 +10,8 @@ public class ConfigAsset : ScriptableSingleton<ConfigAsset>
     public TextAsset csvFile;
     public List<Dictionary<string, object>> parsedCsv;
     public string[] characterNamesFromCsv;
+
+    public StoreSO store;
     
     public float colliderDefaultHeight;
     public float colliderDefaultRadius;

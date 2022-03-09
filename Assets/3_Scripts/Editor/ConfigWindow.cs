@@ -24,8 +24,16 @@ public class ConfigWindow : EditorWindow
         {
             ConfigAsset.instance.Reload();
         }
-        
+
         CustomEditorTools.ShowSmallButton("Reload", ConfigAsset.instance.Reload);
+
+        StoreSO storeAsset = ConfigAsset.instance.store;
+        ConfigAsset.instance.store =
+            (StoreSO)EditorGUILayout.ObjectField("Store asset", ConfigAsset.instance.store, typeof(StoreSO), false);
+        if (storeAsset != ConfigAsset.instance.store)
+        {
+            ConfigAsset.instance.SaveToFile();
+        }
 
         float prevcolliderDefaultRadius = ConfigAsset.instance.colliderDefaultRadius;
         ConfigAsset.instance.colliderDefaultRadius = EditorGUILayout.FloatField("Default collider radius",
