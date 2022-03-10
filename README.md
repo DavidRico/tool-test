@@ -33,5 +33,7 @@ The configuration window holds data that can be stored between sessions.
 It holds a reference to a csv file that should contain the names and prices of the characters, provided by the design team.
 It also holds a reference to a scriptable object containing the store items 
 (the store used to be in a singleton in the scene, but moving it into a scriptable object means the user doesn't have to save the scene every time a new character is added or edited).
-Last, there are some fields to edit the default values that the character creation window will show for character collider height and radius.
+
+Next, there are some fields to edit the default values that the character creation window will show for character collider height and radius,
+and the folders where the materials and prefabs will be saved.
  

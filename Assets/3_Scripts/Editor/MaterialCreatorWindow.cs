@@ -22,11 +22,12 @@ public class MaterialCreatorWindow : EditorWindow
     {
         materialName = EditorGUILayout.TextField("Material name", materialName);
         materialColor = EditorGUILayout.ColorField("Base color for new material", materialColor);
-        Shader prevShader = shader;
+        
+        EditorGUI.BeginChangeCheck();
         shader = (Shader)EditorGUILayout.ObjectField("Shader", shader, typeof(Shader), false);
-        if (shader == null) shader = Shader.Find("Toon/Lit");
-        if (shader != prevShader)
+        if (EditorGUI.EndChangeCheck() || shader == null)
         {
+            if (shader == null) shader = Shader.Find("Toon/Lit");
             materialTextures = new Dictionary<string, Texture>();
             for (int i = 0; i < ShaderUtil.GetPropertyCount(shader); i++)
             {

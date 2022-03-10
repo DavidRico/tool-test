@@ -17,7 +17,7 @@ public static class AssetTools
             newMaterial.SetTexture(key, textures[key]);
         }
         
-        string materialPath = "Assets/1_Graphics/Materials/" + name + ".mat";
+        string materialPath = ConfigAsset.instance.materialsPath + name + ".mat";
         if (AssetDatabase.LoadAssetAtPath<Material>(materialPath) != null)
         {
             if (EditorUtility.DisplayDialog("Warning!",
@@ -37,28 +37,10 @@ public static class AssetTools
         return newMaterial;
     }
 
-
-    public static GameObject CreatePrefabFromFBX(GameObject model)
-    {
-        return SavePrefab(model, "Assets/2_Prefabs/" + model.name + ".prefab");
-    }
-
-    public static GameObject ConfigurePrefab(GameObject prefab, Material material,
-        AnimatorController animatorController, float radius, float height)
-    {
-        prefab.GetComponent<Animator>().runtimeAnimatorController = animatorController;
-        CapsuleCollider capsuleCollider = prefab.GetOrAddComponent<CapsuleCollider>();
-        capsuleCollider.radius = radius;
-        capsuleCollider.height = height;
-        capsuleCollider.center = Vector3.up * (height / 2f);
-        AssignMaterials(prefab, material);
-        return SavePrefab(prefab, AssetDatabase.GetAssetPath(prefab));
-    }
-
     public static GameObject CreatePrefab(GameObject model, Material[] materials, AnimatorController animatorController,
         float colliderRadius, float colliderHeight, string prefabName)
     {
-        string path = "Assets/2_Prefabs/" + prefabName + ".prefab";
+        string path = ConfigAsset.instance.prefabsPath + prefabName + ".prefab";
         if (AssetDatabase.LoadAssetAtPath<GameObject>(path) != null)
         {
             if (!EditorUtility.DisplayDialog("Warning!",
@@ -78,29 +60,6 @@ public static class AssetTools
         GameObject prefabAsset =
             PrefabUtility.SaveAsPrefabAsset(instance, path);
         Object.DestroyImmediate(instance);
-        return prefabAsset;
-    }
-
-    public static void AssignMaterials(GameObject gameObject, Material material)
-    {
-        Renderer renderer = gameObject.GetComponentInChildren<Renderer>();
-        if (renderer == null) return;
-
-        List<Material> materials = new List<Material>();
-        foreach (Material rendererMaterial in renderer.sharedMaterials)
-        {
-            materials.Add(material);
-        }
-
-        renderer.sharedMaterials = materials.ToArray();
-    }
-
-    public static GameObject SavePrefab(GameObject gameObject, string path)
-    {
-        GameObject instanceRoot = PrefabUtility.InstantiatePrefab(gameObject) as GameObject;
-        GameObject prefabAsset =
-            PrefabUtility.SaveAsPrefabAsset(instanceRoot, path);
-        Object.DestroyImmediate(instanceRoot);
         return prefabAsset;
     }
 

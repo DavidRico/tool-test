@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +14,9 @@ public class ConfigAsset : ScriptableSingleton<ConfigAsset>
     
     public float colliderDefaultHeight;
     public float colliderDefaultRadius;
+    
+    public string materialsPath = "Assets/1_Graphics/Materials/";
+    public string prefabsPath = "Assets/2_Prefabs/";
 
     private void OnEnable()
     {

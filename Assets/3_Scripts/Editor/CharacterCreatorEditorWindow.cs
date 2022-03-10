@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
@@ -57,7 +56,10 @@ public class CharacterCreatorEditorWindow : EditorWindow
     {
         EditorGUILayout.Space();
         GUILayout.Label("Model and material configuration", EditorStyles.largeLabel);
+        bool rebuildMaterials = false;
+        EditorGUI.BeginChangeCheck();
         fbxFile = (GameObject)EditorGUILayout.ObjectField("FBX file", fbxFile, typeof(GameObject), false);
+        if (EditorGUI.EndChangeCheck()) rebuildMaterials = true;
         if (fbxFile == null)
         {
             EditorGUILayout.Space();
@@ -73,7 +75,7 @@ public class CharacterCreatorEditorWindow : EditorWindow
             return false;
         }
 
-        if (numberOfMaterials == 0)
+        if (rebuildMaterials || numberOfMaterials == 0)
         {
             GameObject temporalPrefab = PrefabUtility.InstantiatePrefab(fbxFile) as GameObject;
             numberOfMaterials = temporalPrefab.GetComponentInChildren<Renderer>().sharedMaterials.Length;

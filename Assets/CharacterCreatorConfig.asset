@@ -20,3 +20,5 @@ MonoBehaviour:
   store: {fileID: 11400000, guid: b776b44d294df3846b60d8c712c57138, type: 2}
   colliderDefaultHeight: 1.1
   colliderDefaultRadius: 0.2
+  materialsPath: Assets/1_Graphics/Materials/
+  prefabsPath: Assets/2_Prefabs/
