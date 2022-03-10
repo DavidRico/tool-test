@@ -27,7 +27,7 @@ A simple window that allows easy creation of materials.
 Here the user can set the name, color, and shader for the new material, and the window shows the texture properties in the shader, so the user can set those textures as well.
 
 ## Configuration window
-![Configuration window](img/config.png?raw=true "Configuration window")
+![Configuration window](img/config2.png?raw=true "Configuration window")
 
 The configuration window holds data that can be stored between sessions. 
 It holds a reference to a csv file that should contain the names and prices of the characters, provided by the design team.
