@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ConfigWindow : EditorWindow
 {
-    [MenuItem("Tools/Configuration window")]
+    [MenuItem("Tools/Character creator configuration")]
     public static void ShowWindow()
     {
         var window = GetWindow<ConfigWindow>();
